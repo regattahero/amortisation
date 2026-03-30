@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amortisationsrechner – Knotenpunkt Kirchzarten</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --text: #1a1a18;
+    --muted: #6b6b67;
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --green: #3B6D11;
+    --green-light: #EAF3DE;
+    --accent: #185FA5;
+    --font: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  header {
+    max-width: 780px;
+    margin: 0 auto 2.5rem;
+    padding-left: 0;
+  }
+
+  header p.kenn {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+  }
+
+  header h1 {
+    font-size: clamp(20px, 3vw, 26px);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  header p.sub {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .card-title {
+    font-size: 19px;
+    color: #2a2a28;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.15rem;
+    font-weight: 600;
+  }
+
+  .slider-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .slider-row:last-child { margin-bottom: 0; }
+
+  .slider-label {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  input[type=range] {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #ddd;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  input[type=range]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid white;
+  }
+
+  .slider-value {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--text);
+    text-align: right;
+    min-width: 90px;
+  }
+
+  .results {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 10px;
+  }
+
+  .result-card {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .result-card.green { background: var(--green-light); }
+  .result-card.blue  { background: var(--blue-light); }
+
+  .result-label {
+    font-size: 16px;
+    color: #2a2a28;
+    margin-bottom: 6px;
+  }
+
+  .result-card.green .result-label { color: #1e4008; }
+  .result-card.blue  .result-label { color: #0c3d6e; }
+
+  .result-value {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .result-card.green .result-value { color: var(--green); }
+  .result-card.blue  .result-value { color: var(--blue); }
+
+  .result-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    margin-top: 0.5rem;
+  }
+
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 12px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 20px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  .legend-dot.dashed {
+    background: repeating-linear-gradient(90deg, #3B6D11 0, #3B6D11 5px, transparent 5px, transparent 9px);
+  }
+
+  .annahmen {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--border);
+  }
+
+  /* Vergleichstabelle */
+  .vt { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .vt th { font-size: 16px; color: #2a2a28; text-align: center; padding: 6px 8px; border-bottom: 0.5px solid var(--border); font-weight: 600; }
+  .vt th.left { text-align: left; }
+  .vt td { padding: 9px 8px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: middle; text-align: center; font-size: 14px; }
+  .vt td.left { text-align: left; color: var(--muted); }
+  .vt tr:last-child td { border-bottom: none; }
+  .vt .sec td { background: var(--bg); font-size: 12px; color: var(--muted); padding: 5px 8px; }
+  .bar-bg { width: 100%; background: #eee; border-radius: 3px; height: 11px; min-width: 80px; }
+  .bar-fill { height: 11px; border-radius: 3px; }
+  .val-s { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .stufe { font-size: 14px; color: var(--muted); }
+  /* Annahmen-Box */
+  .annahmen-box { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .annahmen-col h3 { font-size: 16px; color: #2a2a28; margin-bottom: 10px; font-weight: 600; }
+  .annahmen-col ul { list-style: none; padding: 0; }
+  .annahmen-col ul li { font-size: 14px; color: var(--text); line-height: 1.6; padding: 5px 0; border-bottom: 0.5px solid var(--border); display: flex; gap: 8px; }
+  .annahmen-col ul li:last-child { border-bottom: none; }
+  .annahmen-col ul li span.key { color: var(--muted); min-width: 130px; flex-shrink: 0; font-size: 13px; }
+  .annahmen-col p { font-size: 14px; color: var(--text); line-height: 1.7; }
+  @media (max-width: 560px) { .annahmen-box { grid-template-columns: 1fr; } }
+
+  @media (max-width: 520px) {
+    .results { grid-template-columns: 1fr; }
+    .slider-row { grid-template-columns: 1fr; }
+    .slider-value { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="card">
+    <div class="card-title" style="font-size:28px;">Amortisationsrechner – Ampel vs. Kreisverkehr</div>
+    <p style="font-size:15px;color:#2a2a28;line-height:1.4;margin-top:8px;">Wann gleichen die eingesparten Kosten die höheren Baukosten des Kreisverkehrs aus?</p>
+    <p style="font-size:15px;color:#2a2a28;line-height:1.4;margin-top:10px;">Betrachtet werden die Wartungskosten der Ampel und die volkswirtschaftlichen Unfallkosten mit Hilfe der jeweils spezifischen Unfallkostenrate (UKR) für den jeweiligen Typ von Knotenpunkt (Ampel bzw. Kreisverkehr).</p>
+    <p style="font-size:15px;color:#2a2a28;line-height:1.4;margin-top:10px;">Anders als ein privater Bauherr trägt das Land Baden-Württemberg als Bauherr eine volkswirtschaftliche Verantwortung: Es muss deshalb nicht nur die Baukosten, sondern die Gesamtkosten für die Gesellschaft im Blick haben – einschließlich der Unfallkosten, die letztlich alle tragen.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Variantenvergleich<br><span style="font-weight:400;font-size:15px;">Wartezeiten laut Gutachten Fichtner [1]<br>Sicherheit (Unfallkostenrate) nach Meewes [2]<br>Baulicher Aufwand laut Badische Zeitung [3]</span></div>
+    <table class="vt">
+      <thead>
+        <tr>
+          <th class="left" style="width:40%">Kriterium</th>
+          <th style="width:30%">Var. 2b<br><span style="font-weight:400;font-size:13px;color:#2a2a28">Ampel</span></th>
+          <th style="width:30%">Var. 4<br><span style="font-weight:400;font-size:13px;color:#2a2a28">Kreisverkehr</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="left"><strong>Baulicher Aufwand</strong><div class="val-s">geschätzte Baukosten [€]</div></td>
+          <td>
+            <input type="range" id="cost_2b" min="0" max="1000000" step="10000" value="200000" style="width:100%;margin-bottom:4px;">
+            <div class="val-s" id="cost_2b-out">200.000 €</div>
+          </td>
+          <td>
+            <input type="range" id="cost_4" min="0" max="1000000" step="10000" value="750000" style="width:100%;margin-bottom:4px;">
+            <div class="val-s" id="cost_4-out">750.000 €</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="left"><strong>∅ Wartezeit am Morgen</strong></td>
+          <td><div class="bar-bg"><div class="bar-fill" style="width:89.4%;background:#EF9F27;"></div></div><div class="val-s">29,5 s</div></td>
+          <td><div class="bar-bg"><div class="bar-fill" style="width:20.3%;background:#639922;"></div></div><div class="val-s">6,7 s</div></td>
+        </tr>
+        <tr>
+          <td class="left"><strong>∅ Wartezeit am Abend</strong></td>
+          <td><div class="bar-bg"><div class="bar-fill" style="width:98.5%;background:#EF9F27;"></div></div><div class="val-s">32,5 s</div></td>
+          <td><div class="bar-bg"><div class="bar-fill" style="width:37.3%;background:#639922;"></div></div><div class="val-s">12,3 s</div></td>
+        </tr>
+        <tr>
+          <td class="left"><strong>Sicherheit (Unfallkostenrate)</strong><div class="val-s">Unfallkostenrate (UKR) · niedriger = sicherer</div></td>
+          <td>
+            <input type="range" id="ukr_lsa" min="10" max="100" step="0.1" value="27.1" style="width:100%;margin-bottom:4px;">
+            <div class="val-s" id="ukr_lsa-out">27,1 €/1.000 Kfz</div>
+          </td>
+          <td>
+            <input type="range" id="ukr_kv" min="10" max="100" step="0.1" value="10.2" style="width:100%;margin-bottom:4px;">
+            <div class="val-s" id="ukr_kv-out">10,2 €/1.000 Kfz</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:15px;color:var(--muted);margin-top:12px;line-height:1.7;"><strong>Unfallkostenrate (UKR):</strong> Volkswirtschaftliche Unfallkosten je 1.000 Kfz-Fahrten am Knotenpunkt.<br><strong>Kreuzung mit Ampel 3-phasig:</strong> UKR = <span id="txt_ukr_lsa">27,1</span> €/1.000 Kfz · <strong>Kreisverkehr:</strong> UKR = <span id="txt_ukr_kv">10,2</span> €/1.000 Kfz.<br><strong>Quelle:</strong> Meewes (2003) [2], umgerechnet von DM auf € und auf Preisniveau 2025 hochgerechnet.</p>
+  </div>
+
+
+  <div class="card">
+    <div class="card-title">Verkehrsstärke anpassen (Fahrzeuge pro Tag)</div>
+    <div class="slider-row">
+      <div>
+        <div class="slider-label">Knotenpunkt-DTV [Kfz/24h] &nbsp;(~ 15.500 laut Gutachten Fichtner – Anlage 1)</div>
+        <input type="range" id="dtv" min="0" max="20000" step="500" value="15500">
+      </div>
+      <div class="slider-value" id="dtv-out">15.500</div>
+    </div>
+    <div class="slider-row" style="margin-top:12px;">
+      <div>
+        <div class="slider-label">Jährliche Wartungskosten Ampel [€/Jahr]</div>
+        <input type="range" id="maint" min="0" max="20000" step="100" value="5000">
+      </div>
+      <div class="slider-value" id="maint-out">10.000 €</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Ergebnis</div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px;">
+      <div class="result-card">
+        <div class="result-label">Unfallkosten Ampel</div>
+        <div class="result-value" id="uk_lsa">–</div>
+        <div class="result-sub" id="sub_ukr_lsa">UKR 27,1 €/1.000 Kfz</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">Unfallkosten Kreisel</div>
+        <div class="result-value" id="uk_kv">–</div>
+        <div class="result-sub" id="sub_ukr_kv">UKR 10,2 €/1.000 Kfz</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">Unfallkosten-Ersparnis</div>
+        <div class="result-value" id="saving_yr">–</div>
+        <div class="result-sub">+ Anzahl vermiedener Personenschäden</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">Wartungskosten Ampel</div>
+        <div class="result-value" id="maint-result">–</div>
+        <div class="result-sub">jährlich, Jahr 1</div>
+      </div>
+      <div class="result-card green">
+        <div class="result-label">Gesamtersparnis</div>
+        <div class="result-value" id="total_saving">–</div>
+        <div class="result-sub">Unfall- + Wartungskosten</div>
+      </div>
+      <div class="result-card blue">
+        <div class="result-label">Mehraufwand Bau</div>
+        <div class="result-value" id="delta-out">–</div>
+        <div class="result-sub">Mehrkosten Kreisverkehr vs. Ampel</div>
+      </div>
+    </div>
+    <div style="background:#EAF3DE;border-radius:12px;width:100%;padding:24px;text-align:center;margin:12px 0 8px;">
+      <div style="font-size:40px;font-weight:700;color:#3B6D11;line-height:1.2;">Amortisation nach <span id="amort_nom">–</span> Jahren</div>
+    </div>
+    <p id="amort-summary" style="margin-top:12px;font-size:16px;color:#2a2a28;line-height:1.6;">–</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Kumulierte Wartungs- &amp; Unfallkostenersparnis minus Mehraufwand Bau</div>
+    <div class="chart-wrap">
+      <canvas id="chart"></canvas>
+    </div>
+    <p class="annahmen" id="annahmen" style="display:none"></p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Quellennachweis</div>
+    <div style="font-size:14px;color:var(--muted);line-height:1.9;">
+      [1] Fichtner Water &amp; Transportation GmbH: <em>Verkehrsberatung B 31 AS Kirchzarten</em>, 18.07.2025<br>
+      [2] Eckstein, K.; Meewes, V. (2002): <em>Knotenpunktgrundformen, Verkehrsregelungen, Zufahrten.</em> Gesamtverband der Deutschen Versicherungswirtschaft e. V., Institut für Straßen- und Verkehrswesen Köln<br>
+      [3] Badische Zeitung, 10.03.2026: <em>Geplante Ampel an der B31-Ausfahrt in Kirchzarten sorgt für Diskussionen</em>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const fmt = (n, dec=0) => n.toLocaleString('de-DE', {minimumFractionDigits:dec, maximumFractionDigits:dec});
+  let chart;
+
+  function calc() {
+    const dtv    = +document.getElementById('dtv').value;
+    const maint  = +document.getElementById('maint').value;
+    document.getElementById('maint-out').textContent = fmt(maint) + ' €';
+    const cost2b = +document.getElementById('cost_2b').value;
+    const cost4  = +document.getElementById('cost_4').value;
+    const delta  = Math.max(0, cost4 - cost2b);
+    const ukrLSA = +document.getElementById('ukr_lsa').value;
+    const ukrKV  = +document.getElementById('ukr_kv').value;
+
+    document.getElementById('dtv-out').textContent    = fmt(dtv);
+    document.getElementById('cost_2b-out').textContent = fmt(cost2b) + ' €';
+    document.getElementById('cost_4-out').textContent  = fmt(cost4) + ' €';
+    document.getElementById('delta-out').textContent   = fmt(delta) + ' €';
+    document.getElementById('ukr_lsa-out').textContent = fmt(ukrLSA,1) + ' €/1.000 Kfz';
+    document.getElementById('ukr_kv-out').textContent  = fmt(ukrKV,1)  + ' €/1.000 Kfz';
+    document.getElementById('sub_ukr_lsa').textContent = 'UKR ' + fmt(ukrLSA,1) + ' €/1.000 Kfz';
+    document.getElementById('sub_ukr_kv').textContent  = 'UKR ' + fmt(ukrKV,1)  + ' €/1.000 Kfz';
+    document.getElementById('txt_ukr_lsa').textContent = fmt(ukrLSA,1);
+    document.getElementById('txt_ukr_kv').textContent  = fmt(ukrKV,1);
+
+    const ukLSA    = ukrLSA / 1000 * dtv * 365;
+    const ukKV     = ukrKV  / 1000 * dtv * 365;
+    const savingUKR = (ukrLSA - ukrKV) / 1000 * dtv * 365;
+    const savingYr  = savingUKR + maint;
+
+    document.getElementById('uk_lsa').textContent    = fmt(Math.round(ukLSA)) + ' €/Jahr';
+    document.getElementById('uk_kv').textContent     = fmt(Math.round(ukKV))  + ' €/Jahr';
+    document.getElementById('maint-result').textContent = fmt(maint) + ' €/Jahr';
+    document.getElementById('saving_yr').textContent = fmt(Math.round(savingUKR)) + ' €/Jahr';
+    document.getElementById('total_saving').textContent = fmt(Math.round(savingYr)) + ' €/Jahr';
+
+    const amortNom = savingYr > 0 ? delta / savingYr : Infinity;
+    document.getElementById('amort_nom').textContent = savingYr > 0 ? fmt(amortNom,1) : '—';
+
+    const years = Array.from({length:21}, (_,i)=>i);
+    const nomData = years.map(y => Math.round(savingYr * y - delta));
+    const gain20 = nomData[20];
+
+    const summaryEl = document.getElementById('amort-summary');
+    if (savingYr > 0 && delta > 0) {
+      summaryEl.textContent = `Nach ${fmt(amortNom,1)} Jahren haben sich die Mehrkosten des Kreisverkehrs gegenüber der Ampellösung durch eingesparte Unfallkosten und vermiedene Wartungskosten volkswirtschaftlich vollständig amortisiert. Nach insgesamt 20 Jahren ergibt sich ein volkswirtschaftlicher Gewinn von ${fmt(gain20/1000000, 2)} Mio. €.`;
+    } else if (delta === 0) {
+      summaryEl.textContent = 'Kein Baukosten-Delta – keine Amortisationsrechnung erforderlich.';
+    } else {
+      summaryEl.textContent = '–';
+    }
+
+    if (!chart) {
+      const zeroPlugin = {
+        id:'zero',
+        afterDraw(ch) {
+          const {ctx, scales:{x,y}} = ch;
+          const yZ = y.getPixelForValue(0);
+          ctx.save();
+          ctx.beginPath();
+          ctx.strokeStyle='rgba(0,0,0,0.2)';
+          ctx.lineWidth=0.5;
+          ctx.setLineDash([4,4]);
+          ctx.moveTo(x.left,yZ); ctx.lineTo(x.right,yZ);
+          ctx.stroke(); ctx.restore();
+        }
+      };
+      chart = new Chart(document.getElementById('chart'), {
+        type:'line',
+        plugins:[zeroPlugin],
+        data:{
+          labels: years,
+          datasets:[
+            { label:'Ersparnis', data:nomData, borderColor:'#185FA5', backgroundColor:'rgba(24,95,165,0.06)', fill:true, borderWidth:2, pointRadius:0, tension:0.1 }
+          ]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          animation:{ duration: 200 },
+          interaction:{mode:'index',intersect:false},
+          plugins:{
+            legend:{display:false},
+            tooltip:{callbacks:{label:ctx=>'Kumulierte Ersparnis: '+fmt(ctx.parsed.y)+' €'}}
+          },
+          scales:{
+            x:{
+              title:{display:true,text:'Jahre nach Bau',font:{size:15},color:'#555'},
+              ticks:{color:'#555',font:{size:13},maxTicksLimit:11},
+              grid:{color:'rgba(0,0,0,0.06)'}
+            },
+            y:{
+              title:{display:true,text:'Ersparnis minus Baudelta [€]',font:{size:15},color:'#555'},
+              ticks:{color:'#555',font:{size:13},callback:v=>fmt(v)},
+              grid:{color:'rgba(0,0,0,0.06)'}
+            }
+          }
+        }
+      });
+    } else {
+      chart.data.datasets[0].data = nomData;
+      chart.update('none');
+    }
+  }
+
+  ['dtv','cost_2b','cost_4','maint','ukr_lsa','ukr_kv'].forEach(id =>
+    document.getElementById(id).addEventListener('input', calc)
+  );
+  calc();
+</script>
+</body>
+</html>
