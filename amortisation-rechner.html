@@ -293,8 +293,8 @@
         <tr>
           <td class="left"><strong>Sicherheit (Unfallkostenrate)</strong><div class="val-s">Unfallkostenrate (UKR) · niedriger = sicherer</div></td>
           <td>
-            <input type="range" id="ukr_lsa" min="10" max="100" step="0.1" value="27.1" style="width:100%;margin-bottom:4px;">
-            <div class="val-s" id="ukr_lsa-out">27,1 €/1.000 Kfz</div>
+            <input type="range" id="ukr_lsa" min="10" max="100" step="0.1" value="14" style="width:100%;margin-bottom:4px;">
+            <div class="val-s" id="ukr_lsa-out">14,0 €/1.000 Kfz</div>
           </td>
           <td>
             <input type="range" id="ukr_kv" min="10" max="100" step="0.1" value="10.2" style="width:100%;margin-bottom:4px;">
@@ -303,7 +303,7 @@
         </tr>
       </tbody>
     </table>
-    <p style="font-size:15px;color:var(--muted);margin-top:12px;line-height:1.7;"><strong>Unfallkostenrate (UKR):</strong> Volkswirtschaftliche Unfallkosten je 1.000 Kfz-Fahrten am Knotenpunkt.<br><strong>Kreuzung mit Ampel 3-phasig:</strong> UKR = <span id="txt_ukr_lsa">27,1</span> €/1.000 Kfz · <strong>Kreisverkehr:</strong> UKR = <span id="txt_ukr_kv">10,2</span> €/1.000 Kfz.<br><strong>Hinweis:</strong> UKR nach Meewes umgerechnet von DM auf € und auf Preisniveau 2025 hochgerechnet.</p>
+    <p style="font-size:15px;color:var(--muted);margin-top:12px;line-height:1.7;"><strong>Unfallkostenrate (UKR):</strong> Volkswirtschaftliche Unfallkosten je 1.000 Kfz-Fahrten am Knotenpunkt.<br><strong>Kreuzung mit Ampel 3-phasig:</strong> UKR = <span id="txt_ukr_lsa">14,0</span> €/1.000 Kfz · <strong>Kreisverkehr:</strong> UKR = <span id="txt_ukr_kv">10,2</span> €/1.000 Kfz.<br><strong>Hinweis:</strong> UKR nach Meewes umgerechnet von DM auf € und auf Preisniveau 2025 hochgerechnet.</p>
   </div>
 
 
@@ -421,15 +421,15 @@
     document.getElementById('total_saving').textContent = fmt(Math.round(savingYr)) + ' €/Jahr';
 
     const amortNom = savingYr > 0 ? delta / savingYr : Infinity;
-    document.getElementById('amort_nom').textContent = savingYr > 0 ? fmt(amortNom,1) : '—';
+    document.getElementById('amort_nom').textContent = savingYr > 0 ? fmt(Math.round(amortNom)) : '—';
 
-    const years = Array.from({length:21}, (_,i)=>i);
+    const years = Array.from({length:51}, (_,i)=>i);
     const nomData = years.map(y => Math.round(savingYr * y - delta));
-    const gain20 = nomData[20];
+    const gain50 = nomData[50];
 
     const summaryEl = document.getElementById('amort-summary');
     if (savingYr > 0 && delta > 0) {
-      summaryEl.textContent = `Nach ${fmt(amortNom,1)} Jahren haben sich die Mehrkosten des Kreisverkehrs gegenüber der Ampellösung durch eingesparte Unfallkosten und vermiedene Wartungskosten volkswirtschaftlich vollständig amortisiert. Nach insgesamt 20 Jahren ergibt sich ein volkswirtschaftlicher Gewinn von ${fmt(gain20/1000000, 2)} Mio. €.`;
+      summaryEl.textContent = `Nach ${fmt(amortNom,1)} Jahren haben sich die Mehrkosten des Kreisverkehrs gegenüber der Ampellösung durch eingesparte Unfallkosten und vermiedene Wartungskosten volkswirtschaftlich vollständig amortisiert. Nach insgesamt 50 Jahren ergibt sich ein volkswirtschaftlicher Gewinn von ${fmt(gain50)} €.`;
     } else if (delta === 0) {
       summaryEl.textContent = 'Kein Baukosten-Delta – keine Amortisationsrechnung erforderlich.';
     } else {
