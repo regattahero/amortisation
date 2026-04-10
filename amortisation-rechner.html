@@ -259,7 +259,7 @@
     <p style="font-size:15px;color:#2a2a28;line-height:1.4;margin-top:10px;">Anders als ein privater Bauherr trägt das Land Baden-Württemberg als Bauherr eine volkswirtschaftliche Verantwortung: Es muss deshalb nicht nur die Baukosten, sondern die Gesamtkosten für die Gesellschaft im Blick haben – einschließlich der Unfallkosten, die letztlich alle tragen.</p>
   </div>
   <div class="card">
-    <div class="card-title">Variantenvergleich<br><span style="font-weight:400;font-size:15px;">Wartezeiten laut Gutachten Fichtner [1]<br>Sicherheit (Unfallkostenrate) nach Meewes [2]<br>Baulicher Aufwand laut Badische Zeitung [3]</span></div>
+    <div class="card-title">Variantenvergleich<br><span style="font-weight:400;font-size:15px;">Wartezeiten laut Gutachten Fichtner [1]<br>Sicherheit (Unfallkostenrate) nach Zimmermann et al. [2]<br>Baulicher Aufwand laut Badische Zeitung [3]</span></div>
     <table class="vt">
       <thead>
         <tr>
@@ -293,17 +293,17 @@
         <tr>
           <td class="left"><strong>Sicherheit (Unfallkostenrate)</strong><div class="val-s">Unfallkostenrate (UKR) · niedriger = sicherer</div></td>
           <td>
-            <input type="range" id="ukr_lsa" min="10" max="100" step="0.1" value="14" style="width:100%;margin-bottom:4px;">
-            <div class="val-s" id="ukr_lsa-out">14,0 €/1.000 Kfz</div>
+            <input type="range" id="ukr_lsa" min="5" max="30" step="0.1" value="20.0" style="width:100%;margin-bottom:4px;">
+            <div class="val-s" id="ukr_lsa-out">20,0 €/1.000 Kfz</div>
           </td>
           <td>
-            <input type="range" id="ukr_kv" min="10" max="100" step="0.1" value="10.2" style="width:100%;margin-bottom:4px;">
-            <div class="val-s" id="ukr_kv-out">10,2 €/1.000 Kfz</div>
+            <input type="range" id="ukr_kv" min="5" max="30" step="0.1" value="16.0" style="width:100%;margin-bottom:4px;">
+            <div class="val-s" id="ukr_kv-out">16,0 €/1.000 Kfz</div>
           </td>
         </tr>
       </tbody>
     </table>
-    <p style="font-size:15px;color:var(--muted);margin-top:12px;line-height:1.7;"><strong>Unfallkostenrate (UKR):</strong> Volkswirtschaftliche Unfallkosten je 1.000 Kfz-Fahrten am Knotenpunkt.<br><strong>Kreuzung mit Ampel 3-phasig:</strong> UKR = <span id="txt_ukr_lsa">14,0</span> €/1.000 Kfz · <strong>Kreisverkehr:</strong> UKR = <span id="txt_ukr_kv">10,2</span> €/1.000 Kfz.<br><strong>Hinweis:</strong> UKR nach Meewes umgerechnet von DM auf € und auf Preisniveau 2025 hochgerechnet.</p>
+    <p style="font-size:15px;color:var(--muted);margin-top:12px;line-height:1.7;"><strong>Unfallkostenrate (UKR):</strong> Volkswirtschaftliche Unfallkosten je 1.000 Kfz-Fahrten am Knotenpunkt.<br><strong>Einmündung mit Ampel 3-phasig:</strong> UKR = <span id="txt_ukr_lsa">20,0</span> €/1.000 Kfz · <strong>Kreisverkehr:</strong> UKR = <span id="txt_ukr_kv">16,0</span> €/1.000 Kfz.<br><strong>Hinweis:</strong> UKR-Basiswerte nach Zimmermann et al. [2] (Einmündung Ampel 10 €, Kreisverkehr 8 €/1.000 Kfz, Preisstand 2000), hochgerechnet auf 2025 mit nominalem BIP pro Kopf als Deflator (Faktor 2,0) – üblich für volkswirtschaftliche Unfallkosten.</p>
   </div>
 
 
@@ -319,7 +319,7 @@
     <div class="slider-row" style="margin-top:12px;">
       <div>
         <div class="slider-label">Jährliche Wartungskosten Ampel [€/Jahr]</div>
-        <input type="range" id="maint" min="0" max="20000" step="100" value="5000">
+        <input type="range" id="maint" min="0" max="20000" step="100" value="6000">
       </div>
       <div class="slider-value" id="maint-out">10.000 €</div>
     </div>
@@ -377,7 +377,7 @@
     <div class="card-title">Quellennachweis</div>
     <div style="font-size:14px;color:var(--muted);line-height:1.9;">
       [1] Fichtner Water &amp; Transportation GmbH: <em>Verkehrsberatung B 31 AS Kirchzarten</em>, 18.07.2025<br>
-      [2] Eckstein, K.; Meewes, V. (2002): <em>Knotenpunktgrundformen, Verkehrsregelungen, Zufahrten.</em> Gesamtverband der Deutschen Versicherungswirtschaft e. V., Institut für Straßen- und Verkehrswesen Köln<br>
+      [2] Zimmermann, M.; Beeh, J.; Schulz, S.; Roos, R. (2018): <em>Sicherheitstechnische Überprüfung von Elementen plangleicher Knotenpunkte an Landstraßen.</em> Berichte der Bundesanstalt für Straßenwesen, Heft V 297, Bergisch Gladbach.<br>
       [3] Badische Zeitung, 10.03.2026: <em>Geplante Ampel an der B31-Ausfahrt in Kirchzarten sorgt für Diskussionen</em>
     </div>
   </div>
